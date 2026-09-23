@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+    <title>EventMatch KZ — подбор подрядчика</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Geist_Mono:wght@400..600&display=swap" rel="stylesheet" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://vercel.com/geist/vercel-brand.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script type="module" src="/static/js/app.js"></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="EventMatch KZ — главная">
+          <span class="brand-mark" aria-hidden="true">EM</span>
+          <span>EventMatch <span class="brand-region">KZ</span></span>
+        </a>
+        <div class="header-actions">
+          <span class="header-note">Подбор event-подрядчиков</span>
+          <button id="auth-button" class="quiet-button" type="button">Войти</button>
+          <button id="add-provider-button" class="quiet-button" type="button" hidden>Добавить своего</button>
+        </div>
+      </header>
+
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Каталог специалистов</p>
+        <h1 id="page-title">Найдите подрядчика для своего события</h1>
+        <p class="intro-copy">Укажите условия — сервис покажет до трёх вариантов и объяснит, чем подходит каждый.</p>
+      </section>
+
+      <section id="personal-section" class="personal-section" aria-labelledby="personal-heading" hidden>
+        <div class="results-heading-row">
+          <div>
+            <p class="eyebrow">Личный каталог</p>
+            <h2 id="personal-heading">Мои подрядчики</h2>
+          </div>
+          <p id="personal-count" class="result-count"></p>
+        </div>
+        <div id="personal-list" class="personal-list"></div>
+      </section>
+
+      <form id="search-form" class="search-panel">
+        <div class="form-grid">
+          <div class="field">
+            <label for="city">Город</label>
+            <select id="city" name="city" required>
+              <option value="">Загружаем города…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="event-date">Дата мероприятия</label>
+            <input id="event-date" name="event_date" type="date" required>
+          </div>
+          <div class="field">
+            <label for="event-format">Формат мероприятия</label>
+            <select id="event-format" name="event_format" required>
+              <option value="">Выберите формат</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="category">Категория подрядчика</label>
+            <select id="category" name="category" required>
+              <option value="">Сначала выберите город</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="budget">Бюджет, ₸</label>
+            <input id="budget" name="budget_kzt" type="number" min="1" max="100000000" step="1" value="900000" required>
+          </div>
+          <div class="field">
+            <label for="language">Язык <span class="optional">необязательно</span></label>
+            <select id="language" name="language">
+              <option value="">Любой язык</option>
+            </select>
+          </div>
+          <div class="field field-hours">
+            <label for="hours">Длительность, часов <span class="optional">необязательно</span></label>
+            <input id="hours" name="hours" type="number" min="1" max="24" step="1" placeholder="Не учитывать">
+          </div>
+        </div>
+        <div class="form-actions">
+          <p class="form-hint">Язык и длительность учитываются, если вы их указали.</p>
+          <button id="submit-button" class="primary-button" type="submit">Подобрать подрядчиков</button>
+        </div>
+      </form>
+
+      <section class="results-section" aria-labelledby="results-heading">
+        <div class="results-heading-row">
+          <div>
+            <p class="eyebrow">Результат поиска</p>
+            <h2 id="results-heading">Подходящие варианты</h2>
+          </div>
+          <p id="result-count" class="result-count"></p>
+        </div>
+        <div id="results" class="results" aria-live="polite" aria-atomic="false">
+          <p class="empty-prompt">Заполните условия и нажмите «Подобрать подрядчиков».</p>
+        </div>
+        <p id="catalog-note" class="catalog-note" hidden>Доступность указана по данным каталога — перед заказом уточните её у подрядчика.</p>
+      </section>
+
+      <footer class="site-footer">
+        <span>Каталог помогает сравнить варианты по заданным условиям.</span>
+        <span>Цены указаны «от».</span>
+      </footer>
+    </main>
+
+    <dialog id="auth-dialog" class="app-dialog">
+      <form id="auth-form" class="dialog-content">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">Личный каталог</p><h2 id="auth-title">Войти</h2></div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Закрыть">×</button>
+        </div>
+        <label class="field"><span>Email</span><input id="auth-email" type="email" autocomplete="email" required maxlength="254"></label>
+        <label class="field"><span>Пароль</span><input id="auth-password" type="password" autocomplete="current-password" required minlength="8" maxlength="128"></label>
+        <p id="auth-message" class="dialog-message" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button id="auth-submit" class="primary-button" type="submit">Войти</button>
+          <button id="auth-mode-button" class="text-button" type="button">Создать аккаунт</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="provider-dialog" class="app-dialog app-dialog-wide">
+      <form id="provider-form" class="dialog-content">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">Личный каталог</p><h2 id="provider-form-title">Добавить подрядчика</h2></div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Закрыть">×</button>
+        </div>
+        <input id="provider-id" type="hidden">
+        <div class="provider-form-grid">
+          <label class="field"><span>Имя или название</span><input id="provider-name-input" required maxlength="160"></label>
+          <label class="field"><span>Город</span><input id="provider-city-input" required maxlength="100"></label>
+          <label class="field"><span>Категории через запятую</span><input id="provider-categories-input" required placeholder="Ведущий, тамада"></label>
+          <label class="field"><span>Форматы через запятую</span><input id="provider-formats-input" required placeholder="Свадьба, той"></label>
+          <label class="field"><span>Цена от, ₸</span><input id="provider-price-input" type="number" min="0" max="100000000" required></label>
+          <label class="field"><span>Языки через запятую</span><input id="provider-languages-input" placeholder="Русский, казахский"></label>
+          <label class="field"><span>Максимум часов</span><input id="provider-hours-input" type="number" min="1" max="24" step="0.5"></label>
+          <label class="field"><span>Занятые даты через запятую</span><input id="provider-busy-input" placeholder="2026-10-15, 2026-12-20"></label>
+          <label class="field"><span>Телефон</span><input id="provider-phone-input" type="tel" maxlength="80"></label>
+          <label class="field"><span>Сайт</span><input id="provider-website-input" type="url" placeholder="https://example.com" maxlength="300"></label>
+          <label class="field"><span>Соцсеть</span><input id="provider-social-input" type="url" placeholder="https://instagram.com/..." maxlength="300"></label>
+          <label class="field field-full"><span>Описание</span><textarea id="provider-description-input" rows="4" maxlength="4000"></textarea></label>
+        </div>
+        <p id="provider-form-message" class="dialog-message" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button class="primary-button" type="submit">Сохранить профиль</button>
+          <button class="text-button" type="button" data-close-dialog>Отмена</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="detail-dialog" class="app-dialog app-dialog-wide">
+      <div class="dialog-content">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">Профиль подрядчика</p><h2 id="detail-title">Подробности</h2></div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Закрыть">×</button>
+        </div>
+        <dl id="detail-content" class="detail-content"></dl>
+        <section class="ai-analysis-section" aria-labelledby="ai-heading">
+          <div class="ai-heading-row"><h3 id="ai-heading">Анализ ИИ</h3><span class="ai-label">По данным профиля</span></div>
+          <p id="ai-result" class="ai-result">Запустите анализ, чтобы получить краткое объяснение сильных сторон и недостающей информации.</p>
+          <button id="analyze-button" class="quiet-button" type="button">Анализировать с ИИ</button>
+        </section>
+        <p id="detail-message" class="dialog-message" aria-live="polite"></p>
+        <div id="detail-owner-actions" class="dialog-actions" hidden>
+          <button id="edit-provider-button" class="quiet-button" type="button">Изменить</button>
+          <button id="delete-provider-button" class="text-button" type="button">Удалить</button>
+        </div>
+      </div>
+    </dialog>
+  </body>
+</html>
